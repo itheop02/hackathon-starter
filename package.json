@@ -26,7 +26,8 @@
     "pretest:e2e:live": "npx playwright install chromium",
     "pretest:e2e:replay": "npx playwright install chromium",
     "pretest:e2e:custom": "npx playwright install chromium",
-    "test:image-link": "mocha --timeout 300000 \"test/*links.test.js\""
+    "test:image-link": "mocha --timeout 300000 \"test/*links.test.js\"",
+    "integration:test": "node integration/run-tests.cjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.1",
@@ -59,6 +60,7 @@
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.3",
     "express-session": "^1.19.0",
+    "joi": "^17.13.9",
     "jquery": "^4.0.0",
     "keyv": "^6.1.0",
     "langchain": "^1.6.3",

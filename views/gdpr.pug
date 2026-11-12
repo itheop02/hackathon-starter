@@ -1,0 +1,47 @@
+extends layout
+
+block content
+  h1 Privacy checks
+  p Signed in as #{ user.email }.
+  p Results are decisions and action plans. No profile changes or messages are sent.
+  p
+    button#grant.btn.btn-success(type='button') Give consent
+    |
+    button#withdraw.btn.btn-secondary(type='button') Withdraw consent
+  label(for='policy') Operation
+  select#policy.form-select
+    each operation in ['consent', 'lawful', 'information', 'access', 'rectification', 'erasure', 'restriction', 'portability', 'objection', 'complaint', 'breach']
+      option(value=operation)= operation
+  label(for='body') Request
+  textarea#body.form-control(rows=5) {}
+  button#evaluate.btn.btn-primary(type='button') Evaluate
+  pre#result.mt-3(aria-live='polite') Ready.
+  script.
+    const token = document.querySelector('meta[name="csrf-token"]').content;
+    const examples = { rectification: { updates: { name: 'Updated Name' } }, erasure: { fields: ['name'], reason: 'withdrawn_consent' }, objection: { reason: 'marketing' }, complaint: { authority_id: 'cy-0000', description: 'Test complaint; do not send' }, breach: { incident_id: 'test-incident' } };
+    const result = document.getElementById('result');
+    async function send(method, operation, body) {
+      try {
+        const response = await fetch('/gdpr/' + operation, { method, headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: JSON.stringify(body) });
+        const text = await response.text();
+        let value;
+        try {
+          value = JSON.parse(text);
+        } catch {
+          value = text;
+        }
+        result.textContent = 'HTTP ' + response.status + '\n' + JSON.stringify(value, null, 2);
+      } catch (error) {
+        result.textContent = error.message;
+      }
+    }
+    document.getElementById('grant').onclick = () => send('PATCH', 'consent', { value: 'yes', withdrawn: false });
+    document.getElementById('withdraw').onclick = () => send('PATCH', 'consent', { value: 'yes', withdrawn: true });
+    document.getElementById('policy').onchange = (event) => (document.getElementById('body').value = JSON.stringify(examples[event.target.value] || {}, null, 2));
+    document.getElementById('evaluate').onclick = () => {
+      try {
+        send('POST', document.getElementById('policy').value, JSON.parse(document.getElementById('body').value));
+      } catch (error) {
+        result.textContent = error.message;
+      }
+    };

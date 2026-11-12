@@ -1,3 +1,6 @@
 # Ignore artifacts:
 build
 coverage
+
+# Preserve copied PrivacyLib runtime and policy sources.
+integration/privacy-lib/
